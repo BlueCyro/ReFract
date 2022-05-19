@@ -30,7 +30,8 @@ $nml_mods = "$NeosDir\nml_mods\"
 Copy-Item -Force -Path $AssemblyLocation -Destination $nml_mods
 
 $LogJob = Start-Job {Start-Sleep -Seconds 8
-    Get-Content "$using:LogFolder\$(Get-ChildItem -Path $using:LogFolder | Sort-Object LastWriteTime | Select-Object -last 1)" -Wait
+    $Path = $(Get-ChildItem -Path $using:LogFolder | Sort-Object LastWriteTime | Select-Object -last 1)
+    $Path | Get-Content -Wait
 }
 
 $NeosProc = Start-Process -FilePath $NeosExe -WorkingDirectory $NeosDir -ArgumentList "-DontAutoOpenCloudHome", "-SkipIntroTutorial", "-Screen", "-LoadAssembly `"$NeosDir\Libraries\NeosModLoader.dll`"" -passthru

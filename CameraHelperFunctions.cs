@@ -88,7 +88,15 @@ public static class CameraHelperFunctions
             NeosMod.Debug($"Re:Fract : Camera is {cam}");
             NeosMod.Debug($"Re:Fract : setting the {ParamName} parameter of the {target.GetType()} on camera {cam?.Slot.Name} to {Value} (of type {Value.GetType()}");
             // Call into introspection and give it our override for parameters. Introspection again lets us set values on private fields without reflection
-            Introspection.GetFieldSetter(target.GetType(), ParamName, ReFract.ILOverride)?.Invoke(ref target, Value);
+            // Also checking to see if the field name ends with an exclamaition mark, it's an easy way to tell if you wanna set a property or a field
+            if (ParamName.EndsWith("!"))
+            {
+                Introspection.GetPropSetter(target.GetType(), ParamName.Substring(0, ParamName.Length - 1))?.Invoke(target, Value);
+            }
+            else
+            {
+                Introspection.GetFieldSetter(target.GetType(), ParamName, ReFract.ILOverride)?.Invoke(ref target, Value);
+            }
         }
     }
 

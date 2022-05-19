@@ -23,7 +23,6 @@ public class ReFract : NeosMod
     public static string DynVarKeyString => "Re.Fract_";
     public static string DynVarCamKeyString => "Re.Fract_Camera_";
     public static string ReFractTag => "Re:FractCameraSpace";
-    public delegate void RefAction<T1, T2>(ref T1 obj, T2 value);
     public static Dictionary<string, Type> TypeLookups = new Dictionary<string, Type>();
 
     // This is an override for Introspection - which generates accessor delegates for fields because reflection is slow and I hate it.
@@ -164,8 +163,7 @@ public class ReFract : NeosMod
             {
                 // Get the Reference fieldinfo
                 FieldInfo? field = t.GetField("Reference", BindingFlags.Instance | BindingFlags.Public);
-                if (field == null)
-                    return;
+                if (field == null) return;
 
                 // Get the actual syncref
                 ISyncRef Reference = (ISyncRef)field.GetValue(__instance);
