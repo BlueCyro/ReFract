@@ -6,6 +6,7 @@
 
 - Lets you dynamically alter things such as bloom, depth of field and much more
 - Interfaces through dynamic variables for ease-of-creation
+- Values can be driven and animated via LogiX as a result
 - Persistent across item and world saves
 - Will make you the coolest kid on the block
 
