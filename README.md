@@ -2,6 +2,7 @@
 
 ## Re:Fract is a [NeosModLoader](https://github.com/zkxs/NeosModLoader) mod that exposes many settings on the unity post processing stack for Neos cameras.
 
+## You can find usage instructions in: [Usage.md](Usage.md)
 ## Main Features:
 
 - Lets you dynamically alter things such as bloom, depth of field and much more
