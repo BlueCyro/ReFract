@@ -32,17 +32,17 @@ public static class Introspection
         {
             if (obj == null || fieldName == null || fieldName.Length == 0)
                 return null;
-            NeosMod.Msg("Introspection : Getting field");
+            NeosMod.Debug("Introspection : Getting field");
             // Get the target field
             FieldInfo field = obj.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            NeosMod.Msg("Introspection : Field is " + (field == null ? "null" : "not null"));
+            NeosMod.Debug("Introspection : Field is " + (field == null ? "null" : "not null"));
             if (field == null)
                 return null;
             
-            NeosMod.Msg("Introspection : Field is " + field.Name);
+            NeosMod.Debug("Introspection : Field is " + field.Name);
             // Get the delegate that acts as a field accessor the target field
             var del = GetDynamicMethod(obj, field, ilOverride);
-            NeosMod.Msg("Introspection : Delegate is " + (del == null ? "null" : "not null & " + del.GetType().ToString()));
+            NeosMod.Debug("Introspection : Delegate is " + (del == null ? "null" : "not null & " + del.GetType().ToString()));
             
             if (del == null)
                 return null;
@@ -52,7 +52,7 @@ public static class Introspection
                 _cachedSetters.Add(obj, new Dictionary<string, RefAction<object, object>>());
             
             _cachedSetters[obj].Add(fieldName, del);
-            NeosMod.Msg("Introspection : Added delegate to dictionary at " + obj.ToString() + "." + fieldName);
+            NeosMod.Debug("Introspection : Added delegate to dictionary at " + obj.ToString() + "." + fieldName);
             return del;
         }
     }
@@ -71,17 +71,17 @@ public static class Introspection
             if (obj == null || propName == null || propName.Length == 0)
                 return null;
             
-            NeosMod.Msg("Introspection : Getting property");
+            NeosMod.Debug("Introspection : Getting property");
             // Get the target property
             PropertyInfo prop = obj.GetProperty(propName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            NeosMod.Msg("Introspection : Property is " + (prop == null ? "null" : "not null"));
+            NeosMod.Debug("Introspection : Property is " + (prop == null ? "null" : "not null"));
             if (prop == null)
                 return null;
             
-            NeosMod.Msg("Introspection : Property is " + prop.Name);
+            NeosMod.Debug("Introspection : Property is " + prop.Name);
             // Get the delegate that acts as a property accessor the target property
             var del = GetDynamicPropMethod(obj, prop);
-            NeosMod.Msg("Introspection : Delegate is " + (del == null ? "null" : "not null & " + del.GetType().ToString()));
+            NeosMod.Debug("Introspection : Delegate is " + (del == null ? "null" : "not null & " + del.GetType().ToString()));
             
             if (del == null)
                 return null;
@@ -91,7 +91,7 @@ public static class Introspection
                 _cachedPropSetters.Add(obj, new Dictionary<string, Action<object, object>>());
             
             _cachedPropSetters[obj].Add(propName, del);
-            NeosMod.Msg("Introspection : Added delegate to dictionary at " + obj.ToString() + "." + propName);
+            NeosMod.Debug("Introspection : Added delegate to dictionary at " + obj.ToString() + "." + propName);
             return del;
         }
     }
@@ -130,9 +130,9 @@ public static class Introspection
             il.Emit(OpCodes.Ldstr, $"Re:Fract : Wrong type for field \"{field.Name}\" which takes \"{field.FieldType}\"");
             il.Emit(OpCodes.Call, typeof(NeosMod).GetMethod("Msg", new Type[] { typeof(string) }));
             il.Emit(OpCodes.Ret);
-            NeosMod.Msg("Introspection : Generated dynamic method with default IL");
+            NeosMod.Debug("Introspection : Generated dynamic method with default IL");
         }
-        NeosMod.Msg("Introspection : Creation of DynamicMethod was successful for " + obj.ToString() + "." + field.Name);
+        NeosMod.Debug("Introspection : Creation of DynamicMethod was successful for " + obj.ToString() + "." + field.Name);
         return (RefAction<object, object>)method.CreateDelegate(typeof(RefAction<,>).MakeGenericType(typeof(object), typeof(object)));
     }
 
@@ -156,7 +156,7 @@ public static class Introspection
         il.Emit(OpCodes.Call, method);
         il.Emit(OpCodes.Ret);
 
-        NeosMod.Msg("Introspection : Created delegate for property " + prop.Name);
+        NeosMod.Debug("Introspection : Created delegate for property " + prop.Name);
 
         var ret = (Action<object, object>)del.CreateDelegate(typeof(Action<object, object>));
         // Add the delegate to the dictionary

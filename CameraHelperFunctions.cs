@@ -63,7 +63,7 @@ public static class CameraHelperFunctions
         // If the camera is not null, but the unity cam is assume it's still initializing and try running the set variable function again in a bit
         if (cam != null && UnityCam == null) // My null checks are paranoid, sue me
         {
-            NeosMod.Msg($"Re:Fract : {CameraName} Camera Connector Found on {cam?.Slot.Name} but no UnityCamera, looping again");
+            NeosMod.Debug($"Re:Fract : {CameraName} Camera Connector Found on {cam?.Slot.Name} but no UnityCamera, looping again");
             Engine.Current.WorldManager.FocusedWorld.RunInSeconds(0.25f, () => SetCameraVariable(space, CameraName, ComponentName, ParamName, Value));
             return;
         }
@@ -135,14 +135,14 @@ public static class CameraHelperFunctions
             // Make sure the variables follow the naming conventions for Re:Fract
             if (splitName.Length == 3 && stringTokens != null && stringTokens.Length == 4 && stringTokens[1] == splitName[2])
             {
-                NeosMod.Msg("Re:Fract : " + keyName + " interacts with this camera");
+                NeosMod.Debug("Re:Fract : " + keyName + " interacts with this camera");
                 object? val = spaceDict[key].GetType().GetProperty("Value")?.GetValue(spaceDict[key]);
-                NeosMod.Msg("Re:Fract : " + keyName + " is " + val + " from " + handler);
+                NeosMod.Debug("Re:Fract : " + keyName + " is " + val + " from " + handler);
                 if (val != null && handler != null)
                 {
                     // If all is well, set the camera's post processing variables back to the ones provided by the space
                     SetCameraVariable(handler.CurrentSpace, stringTokens[1], stringTokens[2], stringTokens[3], val, altCameraInstance);
-                    NeosMod.Msg("Re:Fract : Tokens are " + stringTokens[1] + " " + stringTokens[2] + " " + stringTokens[3]);
+                    NeosMod.Debug("Re:Fract : Tokens are " + stringTokens[1] + " " + stringTokens[2] + " " + stringTokens[3]);
                 }
             }
         }
