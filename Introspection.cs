@@ -1,16 +1,6 @@
-using HarmonyLib;
 using NeosModLoader;
-using FrooxEngine;
-using BaseX;
-using CodeX;
-using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
 using System.Reflection;
 using System.Reflection.Emit;
-using UnityEngine.Rendering.PostProcessing;
-using System.Collections.Generic;
-using UnityNeos;
-
 namespace ReFract;
 
 // The things I do to avoid reflection...

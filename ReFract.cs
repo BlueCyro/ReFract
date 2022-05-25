@@ -5,7 +5,6 @@ using BaseX;
 using UnityEngine;
 using Camera = FrooxEngine.Camera;
 using Component = FrooxEngine.Component;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Reflection;
 using UnityEngine.Rendering.PostProcessing;
@@ -22,7 +21,7 @@ public class ReFract : NeosMod
     public static string DynVarCamKeyString => "Re.Fract_Camera_";
     public static string ReFractTag => "Re:FractCameraSpace";
     public static Dictionary<string, Type> TypeLookups = new Dictionary<string, Type>();
-    public static Type[] SupportedTypes = new Type[] { typeof(bool), typeof(int), typeof(float), typeof(float2), typeof(float3), typeof(float4), typeof(color) };
+    public static Type[] SupportedTypes = new Type[] { typeof(bool), typeof(int), typeof(float), typeof(Vector2), typeof(Vector3), typeof(Vector4), typeof(Color) };
 
     // This is an override for Introspection - which generates accessor delegates for fields because reflection is slow and I hate it.
     // Specifically so it can handle Unity's ParameterOverride<T> types.
@@ -113,7 +112,7 @@ public class ReFract : NeosMod
         // TypeLookups will be used to easily get a type from one specified in a dynamic variable name string
 
         harmony.PatchAll();
-        
+
         // Optional code for generating a supported types list
 
         // StringBuilder sb = new StringBuilder();

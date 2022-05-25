@@ -1,18 +1,10 @@
-using HarmonyLib;
 using NeosModLoader;
 using FrooxEngine;
 using BaseX;
-using CodeX;
-using UnityEngine;
 using Camera = FrooxEngine.Camera;
 using Component = FrooxEngine.Component;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
 using System.Reflection;
 using UnityEngine.Rendering.PostProcessing;
-using System.Reflection.Emit;
-using System.Collections.Generic;
 using UnityNeos;
 
 namespace ReFract;
