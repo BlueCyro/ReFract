@@ -11,7 +11,8 @@ To mark a camera, simply change the variable name to something such as the follo
 
 This will mark your camera with whatever name you choose to replace "MyCameraNameHere" with.
 
-[Image Here]
+![Code_2UNmJGdjVZ](https://user-images.githubusercontent.com/9770110/170128678-f3ef6ec2-df3d-4081-bfea-24d4bc36b8c1.png)
+
 
 ## How do I edit a post processing effect on a camera?
 
@@ -28,7 +29,7 @@ You can see some examples of what this looks like in-game with the following scr
 
 <b>Note that when you first create a variable and set its name, the effect does not automatically update on the camera, simply update the value in the variable to apply any changes.</b>
 
-[Image here]
+![Neos_2oSuNIPYzM](https://user-images.githubusercontent.com/9770110/170128707-deb5b1d0-4caa-41e0-9a06-c33c41d21c05.png)
 
 
 ## Supplementary Information

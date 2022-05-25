@@ -2,6 +2,7 @@
 ### Fields
 - mode (Int32) - Enum values: ScalableAmbientObscurance (0), MultiScaleVolumetricObscurance (1), 
 - intensity (Single)
+- color (Color)
 - ambientOnly (Boolean)
 - noiseFilterTolerance (Single)
 - blurTolerance (Single)
@@ -14,6 +15,7 @@
 
 ## AutoExposure:
 ### Fields
+- filtering (Vector2)
 - minLuminance (Single)
 - maxLuminance (Single)
 - keyValue (Single)
@@ -30,6 +32,7 @@
 - clamp (Single)
 - diffusion (Single)
 - anamorphicRatio (Single)
+- color (Color)
 - fastMode (Boolean)
 - dirtIntensity (Single)
 - enabled (Boolean)
@@ -53,6 +56,7 @@
 - ldrLutContribution (Single)
 - temperature (Single)
 - tint (Single)
+- colorFilter (Color)
 - hueShift (Single)
 - saturation (Single)
 - brightness (Single)
@@ -67,6 +71,9 @@
 - mixerBlueOutRedIn (Single)
 - mixerBlueOutGreenIn (Single)
 - mixerBlueOutBlueIn (Single)
+- lift (Vector4)
+- gamma (Vector4)
+- gain (Vector4)
 - enabled (Boolean)
 
 ## DepthOfField:
@@ -115,6 +122,8 @@
 ## Vignette:
 ### Fields
 - mode (Int32) - Enum values: Classic (0), Masked (1), 
+- color (Color)
+- center (Vector2)
 - intensity (Single)
 - smoothness (Single)
 - roundness (Single)
@@ -129,6 +138,7 @@
 - SampleCount (Int32) - Enum values: Low (0), Medium (1), High (2), VeryHigh (3), 
 - PerPixelNormals (Int32) - Enum values: None (0), Camera (1), GBuffer (2), GBufferOctaEncoded (3), 
 - Intensity (Single)
+- Tint (Color)
 - Radius (Single)
 - PowerExponent (Single)
 - Bias (Single)
@@ -139,6 +149,7 @@
 - FadeStart (Single)
 - FadeLength (Single)
 - FadeToIntensity (Single)
+- FadeToTint (Color)
 - FadeToRadius (Single)
 - FadeToPowerExponent (Single)
 - FadeToThickness (Single)
