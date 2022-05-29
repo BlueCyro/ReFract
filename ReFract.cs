@@ -16,7 +16,7 @@ public class ReFract : NeosMod
 {
     public override string Author => "Cyro";
     public override string Name => "ReFract";
-    public override string Version => "1.0.0";
+    public override string Version => "1.1.0";
     public static string DynVarKeyString => "Re.Fract_";
     public static string DynVarCamKeyString => "Re.Fract_Camera_";
     public static string ReFractTag => "Re:FractCameraSpace";
