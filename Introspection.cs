@@ -94,11 +94,28 @@ public static class Introspection
         var method = new DynamicMethod("", null, new Type[] { typeof(object).MakeByRefType(), typeof(object) }, true);
         var il = method.GetILGenerator(256);
         Label typeFailed = il.DefineLabel();
-        
+        Label isInt = il.DefineLabel();
+        Label cont = il.DefineLabel();
+        Label enumAccept = il.DefineLabel();
         // The ilOverride will return a bool for if it was successfully able to generate IL or not. If not, it just generates a default accessor
         if (ilOverride == null || !ilOverride(obj, field, il))
         {
+            // Check if the first argument is an integer, if it isn't then continue as normal
+            il.Emit(OpCodes.Ldarg_1);
+            il.Emit(OpCodes.Callvirt, typeof(object).GetMethod("GetType"));
+            il.Emit(OpCodes.Ldtoken, typeof(int));
+            il.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
+            il.Emit(OpCodes.Ceq);
+            il.Emit(OpCodes.Brfalse, cont);
+
+            // If the argument is an integer and the field type is an enum, branch to the code that will set the value
+            il.Emit(OpCodes.Ldtoken, field.FieldType);
+            il.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
+            il.Emit(OpCodes.Call, typeof(Type).GetProperty("IsEnum").GetGetMethod());
+            il.Emit(OpCodes.Brtrue, enumAccept);
+
             // Load the value onto the stack, grab the type, and check if it matches the type that the delegate is supposed to handle. If not, jump to the failure state
+            il.MarkLabel(cont);
             il.Emit(OpCodes.Ldarg_1);
             il.Emit(OpCodes.Callvirt, typeof(object).GetMethod("GetType"));
             il.Emit(OpCodes.Ldtoken, field.FieldType);
@@ -107,6 +124,7 @@ public static class Introspection
             il.Emit(OpCodes.Brfalse, typeFailed);
 
             // Otherwise, load the target object in by reference, cast it to the correct handling type, load the value, unbox it as the proper type, and store it in the target field.
+            il.MarkLabel(enumAccept);
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ldind_Ref);
             il.Emit(OpCodes.Castclass, obj);

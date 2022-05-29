@@ -34,8 +34,9 @@ public static class CameraHelperFunctions
     {
         if (space == null || Engine.Current.WorldManager.FocusedWorld != space.World)
             return;
-
-        if (!ReFract.TypeLookups.ContainsKey(ComponentName)) return;
+        
+        bool TypeFound = ReFract.TypeLookups.TryGetValue(ComponentName, out Type CompType);
+        if (!TypeFound) return;
 
         Camera? cam = null;
         UnityEngine.Camera? UnityCam = null;
@@ -67,14 +68,17 @@ public static class CameraHelperFunctions
             if (layer == null) return;
 
             // Check if the component name is a post processing setting or just a generic post processing component
-            bool IsPostProcessSetting = ReFract.TypeLookups[ComponentName].InheritsFrom(typeof(PostProcessEffectSettings));   
+            bool IsPostProcessSetting = CompType.InheritsFrom(typeof(PostProcessEffectSettings));   
 
             // Set targe to either be a post process bundle or a component based on the above condition 
+            //NeosMod.Msg("Re:Fract : " + ComponentName + " Component Found, type: " + ReFract.TypeLookups[ComponentName]);
             object? target = null;
             if (IsPostProcessSetting)
-                target = layer.GetBundle(ReFract.TypeLookups[ComponentName]).settings;
+            {
+                target = layer.haveBundlesBeenInited ? layer.GetBundle(CompType).settings : null;
+            }
             else
-                target = UnityCam.GetComponent(ReFract.TypeLookups[ComponentName]);
+                target = UnityCam.GetComponent(CompType);
 
             if (target == null) return;
             
