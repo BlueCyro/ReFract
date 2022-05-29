@@ -319,6 +319,14 @@ public class ReFract : NeosMod
     [HarmonyPatch]
     public static class RenderConnector_Patch
     {
+        /*
+        [HarmonyPatch(typeof(RenderConnector), "RenderImmediate")]
+        [HarmonyReversePatch]
+        public static byte[] RenderImmediate(FrooxEngine.RenderSettings renderSettings)
+        {
+            throw new NotImplementedException();
+        }
+        */
         // This patch looks pretty harmless, just mark our camera with a local slot to make sure we can find it later
         [HarmonyPatch(typeof(Camera), "RenderToAsset")]
         [HarmonyPrefix]
@@ -327,206 +335,97 @@ public class ReFract : NeosMod
             __instance.Slot.AddLocalSlot("Re:Fract Camera Marker", false);
         }
         
-        [HarmonyPatch(typeof(InteractiveCamera), "Capture", new Type[0])]
+        [HarmonyPatch(typeof(InteractiveCamera), "Capture", new Type[] { typeof(InteractiveCamera.Mode), typeof(int2), typeof(bool) })]
         [HarmonyPostfix]
-        public static void InteractiveCamer_Capture_Postfix(InteractiveCamera __instance)
+        public static void InteractiveCamera_Capture_Postfix(InteractiveCamera __instance)
         {
             __instance.MainCamera.Target?.Slot.AddLocalSlot("Re:Fract Camera Marker", false);
         }
-        // This is where things start getting shnasty
+
         [HarmonyPatch(typeof(RenderConnector), "RenderImmediate")]
-        [HarmonyTranspiler]
-        public static IEnumerable<CodeInstruction> RenderImmediateTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        [HarmonyPrefix]
+        public static bool RenderImmediatePrefix(ref byte[] __result, RenderConnector __instance, FrooxEngine.RenderSettings renderSettings)
         {
-            Msg("Re:Fract : Transpiling RenderImmediate");
-            var codes = instructions.ToList();
-            var localVar = il.DeclareLocal(typeof(UnityEngine.RenderTexture));
+            if (renderSettings.fov >= 180f)
+            {
+                return true;
+            }
             
-            for (int i = 0; i < codes.Count; i++)
-            {
-                if (codes[i].opcode == OpCodes.Callvirt && codes[i].operand is MethodInfo method && method.Name == "Render" && codes[i - 1].opcode == OpCodes.Ldsfld && codes[i - 1].operand is FieldInfo field && field.Name == "camera")
-                {
-                    // The method I'm calling here requires a bit of explanation.
-                    // I basically have to go in and replace the render call so that it searches the world's local slots list for our camera marker.
-                    // This is because the original camera is not sent along with the call, and the slot is the only way to find it.
-                    // The goal here is to use the camera that called the render function instead of the shared camera because the shared one doesn't get any of my fancy post processing applied to it.
-                    codes[i].opcode = OpCodes.Call;
-                    codes[i].operand = AccessTools.Method(typeof(RenderConnector_Patch), nameof(RenderConnector_Patch.RenderImmediatePrefix));
-                    codes.Insert(i + 1, new CodeInstruction(OpCodes.Stloc, localVar));
-                    // ^^ Storing a reference to the render texture for later
-                    // I should also explain that the render texture that comes out of here is either our own camera's, or the shared camera
-                    // Now you may be thinking: "Cyro, you just said you can't use the shared camera, right?"
-                    // You're right. This is because if I just replace the RT in our own camera with the shared RT, it will break
-                    // That is, ONLY if the camera's original RT was bigger than the shared RT that I would have otherwise shoved into it.
-                    // If the shared RT is of the same size of the camera or bigger, it just magically works and has no problems. I'll explain more down below.
-                    break;
-                }
-            }
-
-            // Next, I have to go find ReadPixels and replace it with a proxy function. 
-            // I make it so that it takes in the same arguments meaning I don't have to do anything funky on the stack
-            int ReadFrom = 0;
-            Type[] signature = new Type[] { typeof(UnityEngine.Rect), typeof(int), typeof(int), typeof(bool) };
-            MethodInfo targetMethod = typeof(UnityEngine.Texture2D)
-                .GetMethod("ReadPixels", BindingFlags.Public | BindingFlags.Instance, null, signature, null);
-
-            var texVar = il.DeclareLocal(typeof(UnityEngine.Texture2D));
-            for (int i = 0; i < codes.Count; i++)
-            {
-                if (codes[i].opcode == OpCodes.Callvirt && codes[i].operand is MethodInfo method && method == targetMethod)
-                {
-                    // Here, I'm replacing ReadPixels with my own proxy function.
-                    // All this proxy function does is check if the texture is bigger or smaller than the resolution of the camera.
-                    // Due to what I explained above, I have to check this or else the texture breaks.
-                    // Since we either pass out our own camera's texture if the shared one is smaller, or the shared one if it's bigger, we need to handle this further down in the code
-                    // So this function just resizes the texture down to the queried size after rendering at the camera's original resolution - if it's smaller.
-                    codes[i].opcode = OpCodes.Call;
-                    codes[i].operand = AccessTools.Method(typeof(RenderConnector_Patch), nameof(RenderConnector_Patch.ReadPixelsProxy));
-                    codes.Insert(i + 1, new CodeInstruction(OpCodes.Stloc, texVar));
-                    ReadFrom = i;
-                    break;
-                }
-            }
-
-            if (ReadFrom == 0)
-            {
-                Msg("Re:Fract : RenderImmediateTranspiler: Could not find ReadPixels method");
-                return codes;
-            }
-
-            // This is a little confusing because this'll actually get called BEFORE the ReadPixels (the opcode replacement just above this comment) to set the active RT to the
-            // one spat out by the RenderImmediatePrefix
-            for (int i = ReadFrom; i > 0; i--)
-            {
-                if (codes[i].opcode == OpCodes.Call && codes[i].operand is MethodInfo method && method.Name == "set_active")
-                {
-                    codes[i - 1].opcode = OpCodes.Ldloc;
-                    codes[i - 1].operand = localVar;
-                    break;
-                }
-            }
-
-            // This will replace a call to the texture that's in there with a call to our own texture (being the original one *or* the shared one)
-            for (int i = 0; i < codes.Count; i++)
-            {
-                if (codes[i].opcode == OpCodes.Callvirt && codes[i].operand is MethodInfo method && method.Name == "GetRawTextureData")
-                {
-                    codes[i - 1].opcode = OpCodes.Ldloc;
-                    codes[i - 1].operand = texVar;
-                    break;
-                }
-            }
-            Msg("Re:Fract : Transpiling RenderImmediate done");
-            return codes.ToArray();
-        }
-
-        // I've already explained these above, but I'll sprinkle in some sparse comments so you can understand the horror a bit better
-        public static UnityEngine.RenderTexture RenderImmediatePrefix(UnityEngine.Camera originalCamera)
-        {
-            // Shorthand delegate for finding and destroying the temporary marker
-            Action<Slot> DestroyMarker = new Action<Slot>(slot =>
-            {
-                slot.World.RunSynchronously(() => {
-                    slot.Parent.Tag = "Re:Fract Camera Marked Object";
-                    slot.Destroy();
-                });
-            });
+            // If it's bigger then we render onto a new texture, otherwise we render onto the existing one and then downscale it
 
             // Find the local slots so we can iterate through it and find our camera
             World curWorld = Engine.Current.WorldManager.FocusedWorld;
             var worldLocalSlotsField = typeof(World).GetField("_localSlots", BindingFlags.Instance | BindingFlags.NonPublic);
             
             List<Slot> localSlots = (List<Slot>)worldLocalSlotsField.GetValue(curWorld);
-
-            // Since First() throws if it finds nothing, we try/catch it
             Slot? marker = null;
             try
             {
                 marker = localSlots.First(s => s.Name == "Re:Fract Camera Marker");
             }
-            catch (InvalidOperationException)
+            catch
             {
-                // If we fail (meaning there is no marker) just render normally and return the original texture
-                originalCamera.Render();
-                return originalCamera.targetTexture;
+                // If we can't find the marker, we can't do anything
+                Msg("Re:Fract: RenderConnector_Patch: Could not find camera marker!");
+                return true;
             }
 
-            Camera? neosCam = marker.Parent.GetComponent<Camera>();
-            UnityEngine.Camera? camC = (neosCam?.Connector as CameraConnector)?.UnityCamera;
-            if (neosCam == null || camC == null)
-            {
-                // This is a bit paranoid, but if either of these are null, just render normally and return the original texture
-                originalCamera.Render();
-                DestroyMarker(marker);
-                return originalCamera.targetTexture;
-            }
+            marker.RunSynchronously(() => {
+                if (marker == null) return;
+                marker.Parent.Tag = "Re:Fract Camera Marked Object";
+                marker.Destroy();
+            });
 
-            // Like I said, here we check the size of the shared camera's RT and our own camera's RT.
-            // If the shared one is bigger (meaning replacing the one in our camera will work magically for some reason), we can render onto it just fine
-            Msg("Re:Fract : RenderImmediatePrefix: " + camC.targetTexture);
-            bool isOrigBigger = originalCamera.targetTexture.width > camC.targetTexture.width || originalCamera.targetTexture.height > camC.targetTexture.height;
-            if (isOrigBigger)
-            {
-                var backupTex = camC.targetTexture;
-                camC.targetTexture = originalCamera.targetTexture;
-                camC.Render();
-                camC.targetTexture = backupTex;
-            }
-            else
-            {
-                // Otherwise, we render onto our own camera's RT and then return that
-                camC.Render();
-            }
-
-            DestroyMarker(marker);
+            Camera? cam = marker.Parent.GetComponent<Camera>();
+            UnityEngine.Camera? unityCam = (cam.Connector as CameraConnector)?.UnityCamera;
+            UnityEngine.RenderTexture? renderTexture = unityCam?.targetTexture;
             
-            var tex = isOrigBigger ? originalCamera.targetTexture : camC.targetTexture;
-            return tex;
-        }
+            if (unityCam == null || renderTexture == null) return true;
 
-        // Thanks stackoverflow, screw you unity for not making this a default feature
-        public static UnityEngine.Texture2D ResizeReal(UnityEngine.Texture2D source, int newWidth, int newHeight)
-        {
-            source.filterMode = FilterMode.Point;
-            UnityEngine.RenderTexture rt = UnityEngine.RenderTexture.GetTemporary(newWidth, newHeight);
-            rt.filterMode = FilterMode.Point;
-            UnityEngine.RenderTexture.active = rt;
-            Graphics.Blit(source, rt);
-            UnityEngine.Texture2D nTex = new UnityEngine.Texture2D(newWidth, newHeight);
-            nTex.ReadPixels(new UnityEngine.Rect(0, 0, newWidth, newHeight), 0,0);
-            nTex.Apply();
-            UnityEngine.RenderTexture.active = null;
-            UnityEngine.RenderTexture.ReleaseTemporary(rt);
-            return nTex;
-        }
+            int2 camRes = new int2(renderTexture.width, renderTexture.height);
 
-        public static UnityEngine.Texture2D ReadPixelsProxy(UnityEngine.Texture2D tex, UnityEngine.Rect rect, int destX, int destY, bool recalcMips)
-        {
-            // This is foul.
-            // If the queried size is smaller than the original texture, we need to resize the texture to the queried size
-            var activeTex = UnityEngine.RenderTexture.active;
-            int x = activeTex != null ? activeTex.width : (int)rect.width;
-            int y = activeTex != null ? activeTex.height : (int)rect.height;
+            int2 queriedRes = renderSettings.size;
 
-
-            bool isBigger = rect.width < x || rect.height < y;
-            if (isBigger)
+            if ((queriedRes > camRes).Any())
             {
-                var rectBig = new UnityEngine.Rect(0, 0, x, y);
-                UnityEngine.Texture2D newText = new UnityEngine.Texture2D(x, y, tex.format, false);
-                newText.ReadPixels(rectBig, destX, destY, recalcMips);
-                newText.Apply();
-                // It is absolutely shameful that unity doesn't have an easy function for resizing textures.
-                // Oh wait, it does but it doesn't actually rescale the texture, just the dimensions of it!!!!
-                var resized = ResizeReal(newText, tex.width, tex.height);
-                tex.SetPixels(resized.GetPixels());
-                return tex;
+                Msg("Re:Fract: RenderConnector_Patch: Queried resolution is bigger than camera resolution");
+                UnityEngine.Texture2D tex = new UnityEngine.Texture2D(queriedRes.x, queriedRes.y, renderSettings.textureFormat.ToUnity(true), false);
+                UnityEngine.RenderTexture temp = UnityEngine.RenderTexture.GetTemporary(queriedRes.x, queriedRes.y, 24, RenderTextureFormat.ARGB32);
+                UnityEngine.RenderTexture active = UnityEngine.RenderTexture.active;
+                
+                UnityEngine.RenderTexture old = unityCam.targetTexture;
+                unityCam.targetTexture = temp;
+                unityCam.Render();
+                unityCam.targetTexture = old;
+
+                UnityEngine.RenderTexture.active = temp;
+                tex.ReadPixels(new UnityEngine.Rect(0, 0, queriedRes.x, queriedRes.y), 0, 0, false);
+                tex.Apply();
+                UnityEngine.RenderTexture.active = active;
+                
+                UnityEngine.RenderTexture.ReleaseTemporary(temp);
+                byte[] bytes = tex.GetRawTextureData();
+                UnityEngine.Object.Destroy(tex);
+                __result = bytes;
+                return false;
             }
             else
             {
-                // If the queried size is the same or bigger than the original texture, we can just read the pixels normally >.>
-                tex.ReadPixels(rect, destX, destY, recalcMips);
-                return tex;
+                UnityEngine.RenderTexture active = UnityEngine.RenderTexture.active;
+                UnityEngine.Texture2D tex = new UnityEngine.Texture2D(camRes.x, camRes.y, renderSettings.textureFormat.ToUnity(true), false);
+
+                unityCam.Render();
+                UnityEngine.RenderTexture.active = renderTexture;
+                tex.ReadPixels(new UnityEngine.Rect(0, 0, camRes.x, camRes.y), 0, 0, false);
+                tex.Apply();
+                UnityEngine.RenderTexture.active = active;
+
+                UnityEngine.Texture2D resized = tex.ResizeReal(queriedRes.x, queriedRes.y);
+                byte[] bytes = resized.GetRawTextureData();
+                UnityEngine.Object.Destroy(tex);
+                UnityEngine.Object.Destroy(resized);
+                __result = bytes;
+                return false;
             }
         }
     }

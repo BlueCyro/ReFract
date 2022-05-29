@@ -1,6 +1,7 @@
 using NeosModLoader;
 using FrooxEngine;
 using BaseX;
+using UnityEngine;
 using Camera = FrooxEngine.Camera;
 using Component = FrooxEngine.Component;
 using System.Reflection;
@@ -153,5 +154,20 @@ public static class CameraHelperFunctions
             }
         }
         return hasMethod;
+    }
+    // Thanks stackoverflow, screw you unity for not making this a default feature
+    public static UnityEngine.Texture2D ResizeReal(this UnityEngine.Texture2D source, int newWidth, int newHeight)
+    {
+        source.filterMode = FilterMode.Point;
+        UnityEngine.RenderTexture rt = UnityEngine.RenderTexture.GetTemporary(newWidth, newHeight);
+        rt.filterMode = FilterMode.Point;
+        UnityEngine.RenderTexture.active = rt;
+        Graphics.Blit(source, rt);
+        UnityEngine.Texture2D nTex = new UnityEngine.Texture2D(newWidth, newHeight, source.format, false);
+        nTex.ReadPixels(new UnityEngine.Rect(0, 0, newWidth, newHeight), 0,0);
+        nTex.Apply();
+        UnityEngine.RenderTexture.active = null;
+        UnityEngine.RenderTexture.ReleaseTemporary(rt);
+        return nTex;
     }
 }
