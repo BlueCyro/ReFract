@@ -16,7 +16,7 @@ public class ReFract : NeosMod
 {
     public override string Author => "Cyro";
     public override string Name => "ReFract";
-    public override string Version => "1.1.0";
+    public override string Version => "1.1.1";
     public static string DynVarKeyString => "Re.Fract_";
     public static string DynVarCamKeyString => "Re.Fract_Camera_";
     public static string ReFractTag => "Re:FractCameraSpace";
@@ -228,7 +228,7 @@ public class ReFract : NeosMod
                     {
                         if (c2 is Sync<bool> active && refVar != null && refVar.Target != null && camVar != null)
                         {
-                            Msg($"Re:Fract : Camera \"{Name}\" is {(active ? "active" : "inactive")}!");
+                            Debug($"Re:Fract : Camera \"{Name}\" is {(active ? "active" : "inactive")}!");
                             if (active)
                             {
                                 Engine.Current.WorldManager.FocusedWorld.RunInUpdates(2, () => CameraHelperFunctions.RefreshCameraState(camVar, refVar.Target as Camera));
@@ -236,7 +236,7 @@ public class ReFract : NeosMod
                         }
                         else if (c2 is Sync<bool> active2)
                         {
-                            Msg($"Re:Fract : Camera \"{Name}\" is no longer valid, unsubscribing!");
+                            Debug($"Re:Fract : Camera \"{Name}\" is no longer valid, unsubscribing!");
                             active2.Changed -= handler;
                         }
                     };
@@ -244,7 +244,7 @@ public class ReFract : NeosMod
                     if (camVar != null && Name != null && Name.StartsWith(DynVarCamKeyString) && refVar != null && refVar.Target != null)
                     {
                         CameraHelperFunctions.RefreshCameraState(camVar, refVar.Target as Camera);
-                        Msg($"Re:Fract : Camera \"{Name}\" updated!");
+                        Debug($"Re:Fract : Camera \"{Name}\" updated!");
                         
                         // Just to be extra safe ;) (Though I am under no illusions that juggling events is uh... not great)
                         Sync<bool> cameraSlotActive = refVar.Target.Slot.ActiveSelf_Field;
@@ -258,14 +258,14 @@ public class ReFract : NeosMod
                         if (del == null || !del.HasSubscriber(handler))
                         {
                             refVar.Target.Slot.ActiveSelf_Field.Changed += handler;
-                            Msg($"Re:Fract : Camera \"{Name}\" subscribed to slot active state!");
+                            Debug($"Re:Fract : Camera \"{Name}\" subscribed to slot active state!");
                         }
                         
                         del = fi.GetValue(refVar.Target.Postprocessing) as Delegate;
                         if (del == null || !del.HasSubscriber(handler))
                         {
                             refVar.Target.Postprocessing.Changed += handler;
-                            Msg($"Re:Fract : Camera \"{Name}\" subscribed to postprocessing state!");
+                            Debug($"Re:Fract : Camera \"{Name}\" subscribed to postprocessing state!");
                         }
                     }
                 };
@@ -277,7 +277,7 @@ public class ReFract : NeosMod
                     {
                         // Wait for any variable spaces and such to initialize
                         __instance.World.RunInUpdates(3, () => {
-                            Msg("Re:Fract : Starting " + splitName[2]);
+                            Debug("Re:Fract : Starting " + splitName[2]);
                             CameraHelperFunctions.RefreshCameraState(camVar, camVar.Reference.Target);
                             camVar.Reference.SyncElementChanged(camVar.Reference);
                         });
@@ -366,7 +366,7 @@ public class ReFract : NeosMod
             catch
             {
                 // If we can't find the marker, we can't do anything
-                Msg("Re:Fract: RenderConnector_Patch: Could not find camera marker!");
+                Debug("Re:Fract: RenderConnector_Patch: Could not find camera marker!");
                 return true;
             }
 
