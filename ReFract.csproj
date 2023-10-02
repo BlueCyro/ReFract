@@ -12,45 +12,48 @@
 
 
   <ItemGroup>
-    <Reference Include="0Harmony">
-      <HintPath>SymlinkedLibraries\0Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="BaseX">
-      <HintPath>SymlinkedLibraries\BaseX.dll</HintPath>
-    </Reference>
-    <Reference Include="CodeX">
-      <HintPath>SymlinkedLibraries\CodeX.dll</HintPath>
-    </Reference>
-    <Reference Include="FrooxEngine">
-      <HintPath>SymlinkedLibraries\FrooxEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="NeosModLoader">
-      <HintPath>SymlinkedLibraries\NeosModLoader.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityNeos">
-      <HintPath>SymlinkedLibraries\UnityNeos.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>SymlinkedLibraries\UnityEngine.CoreModule.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.Rendering.PostProcessing">
-      <HintPath>SymlinkedLibraries\Unity.Postprocessing.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.Rendering">
-      <HintPath>SymlinkedLibraries\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.AudioModule">
-      <HintPath>SymlinkedLibraries\UnityEngine.AudioModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.ParticleSystemModule">
-      <HintPath>SymlinkedLibraries\UnityEngine.ParticleSystemModule.dll</HintPath>
-    </Reference>
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
   </ItemGroup>
 
 
   <ItemGroup>
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+    <Reference Include="0Harmony">
+      <HintPath>SymlinkedLibraries\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>SymlinkedLibraries\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Elements.Assets">
+      <HintPath>SymlinkedLibraries\Elements.Assets.dll</HintPath>
+    </Reference>
+    <Reference Include="Elements.Core">
+      <HintPath>SymlinkedLibraries\Elements.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="FrooxEngine">
+      <HintPath>SymlinkedLibraries\FrooxEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="ResoniteModLoader">
+      <HintPath>SymlinkedLibraries\ResoniteModLoader.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Postprocessing.Runtime">
+      <HintPath>SymlinkedLibraries\Unity.Postprocessing.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>SymlinkedLibraries\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>SymlinkedLibraries\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>SymlinkedLibraries\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>SymlinkedLibraries\UnityEngine.ParticleSystemModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityFrooxEngineRunner">
+      <HintPath>SymlinkedLibraries\UnityFrooxEngineRunner.dll</HintPath>
+    </Reference>
   </ItemGroup>
   
 </Project>

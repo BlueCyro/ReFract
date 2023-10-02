@@ -1,18 +1,17 @@
 using HarmonyLib;
-using NeosModLoader;
+using ResoniteModLoader;
 using FrooxEngine;
-using BaseX;
+using Elements.Core;
 using UnityEngine;
 using Camera = FrooxEngine.Camera;
 using Component = FrooxEngine.Component;
-using System.Text;
 using System.Reflection;
 using UnityEngine.Rendering.PostProcessing;
 using System.Reflection.Emit;
-using UnityNeos;
+using UnityFrooxEngineRunner;
 
 namespace ReFract;
-public class ReFract : NeosMod
+public class ReFract : ResoniteMod
 {
     public override string Author => "Cyro";
     public override string Name => "ReFract";
@@ -72,7 +71,7 @@ public class ReFract : NeosMod
             // Call Msg() and print out a silly message if we failed to cast the argument
             il.MarkLabel(typeFailed);
             il.Emit(OpCodes.Ldstr, $"Re:Fract : Wrong type for field \"{field.Name}\" which takes \"{BaseFieldType.GetGenericArguments()[0]}\"! You fool!");
-            il.Emit(OpCodes.Call, typeof(NeosMod).GetMethod("Msg", new Type[] { typeof(string) }));
+            il.Emit(OpCodes.Call, typeof(ResoniteMod).GetMethod("Msg", new Type[] { typeof(string) }));
             il.Emit(OpCodes.Ret);
             return true;
         }
@@ -98,16 +97,30 @@ public class ReFract : NeosMod
         Harmony harmony = new Harmony("net.Cyro.ReFract");
 
         // Get all types that inherit from PostProcessEffectSettings
-        foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-        {
-            foreach (Type type in assembly.GetTypes())
-            {
-                if (type.IsSubclassOf(typeof(PostProcessEffectSettings)))
-                {
-                    TypeLookups.Add(type.Name, type);
-                }
-            }
-        }
+        // foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+        // {
+        //     foreach (Type type in assembly.GetTypes())
+        //     {
+        //         if (type.IsSubclassOf(typeof(PostProcessEffectSettings)))
+        //         {
+        //             TypeLookups.Add(type.Name, type);
+        //         }
+        //     }
+        // }
+
+        // Manual
+        TypeLookups.Add("AmbientOcclusion", typeof(AmbientOcclusion));
+        TypeLookups.Add("AutoExposure", typeof(AutoExposure));
+        TypeLookups.Add("Bloom", typeof(Bloom));
+        TypeLookups.Add("ChromaticAberration", typeof(ChromaticAberration));
+        TypeLookups.Add("ColorGrading", typeof(ColorGrading));
+        TypeLookups.Add("DepthOfField", typeof(DepthOfField));
+        TypeLookups.Add("Grain", typeof(Grain));
+        TypeLookups.Add("LensDistortion", typeof(LensDistortion));
+        TypeLookups.Add("MotionBlur", typeof(MotionBlur));
+        TypeLookups.Add("ScreenSpaceReflections", typeof(ScreenSpaceReflections));
+        TypeLookups.Add("Vignette", typeof(Vignette));
+
         TypeLookups.Add("AmplifyOcclusionBase", typeof(AmplifyOcclusionBase)); // Include this specifically since it does post processing, but is not part of the bundle stack
         // TypeLookups will be used to easily get a type from one specified in a dynamic variable name string
 

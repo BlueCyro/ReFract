@@ -1,12 +1,12 @@
-using NeosModLoader;
+using ResoniteModLoader;
 using FrooxEngine;
-using BaseX;
+using Elements.Core;
 using UnityEngine;
 using Camera = FrooxEngine.Camera;
 using Component = FrooxEngine.Component;
 using System.Reflection;
 using UnityEngine.Rendering.PostProcessing;
-using UnityNeos;
+using UnityFrooxEngineRunner;
 
 namespace ReFract;
 
@@ -52,12 +52,12 @@ public static class CameraHelperFunctions
 
         UnityCam = cam.ToUnity(); // ToUnity() wants a ton of unity references, if that's why you're questioning the excessive unity libraries >.>
         Value = ValueTransformer(Value);
-        NeosMod.Debug("Re:Fract : " + CameraName + " Camera Found");
+        ResoniteMod.Debug("Re:Fract : " + CameraName + " Camera Found");
 
         // If the camera is not null, but the unity cam is assume it's still initializing and try running the set variable function again in a bit
         if (cam != null && UnityCam == null) // My null checks are paranoid, sue me
         {
-            NeosMod.Debug($"Re:Fract : {CameraName} Camera Connector Found on {cam?.Slot.Name} but no UnityCamera, looping again");
+            ResoniteMod.Debug($"Re:Fract : {CameraName} Camera Connector Found on {cam?.Slot.Name} but no UnityCamera, looping again");
             Engine.Current.WorldManager.FocusedWorld.RunInSeconds(0.25f, () => SetCameraVariable(space, CameraName, ComponentName, ParamName, Value));
             return;
         }
@@ -82,8 +82,8 @@ public static class CameraHelperFunctions
 
             if (target == null) return;
             
-            NeosMod.Debug($"Re:Fract : Camera is {cam}");
-            NeosMod.Debug($"Re:Fract : setting the {ParamName} parameter of the {target.GetType()} on camera {cam?.Slot.Name} to {Value} (of type {Value.GetType()}");
+            ResoniteMod.Debug($"Re:Fract : Camera is {cam}");
+            ResoniteMod.Debug($"Re:Fract : setting the {ParamName} parameter of the {target.GetType()} on camera {cam?.Slot.Name} to {Value} (of type {Value.GetType()}");
             // Call into introspection and give it our override for parameters. Introspection again lets us set values on private fields without reflection
             // Also checking to see if the field name ends with an exclamaition mark, it's an easy way to tell if you wanna set a property or a field
             if (ParamName.EndsWith("!"))
@@ -132,14 +132,14 @@ public static class CameraHelperFunctions
             // Make sure the variables follow the naming conventions for Re:Fract
             if (splitName.Length == 3 && stringTokens != null && stringTokens.Length == 4 && stringTokens[1] == splitName[2])
             {
-                NeosMod.Debug("Re:Fract : " + keyName + " interacts with this camera");
+                ResoniteMod.Debug("Re:Fract : " + keyName + " interacts with this camera");
                 object? val = spaceDict[key].GetType().GetProperty("Value")?.GetValue(spaceDict[key]);
-                NeosMod.Debug("Re:Fract : " + keyName + " is " + val + " from " + handler);
+                ResoniteMod.Debug("Re:Fract : " + keyName + " is " + val + " from " + handler);
                 if (val != null && handler != null)
                 {
                     // If all is well, set the camera's post processing variables back to the ones provided by the space
                     SetCameraVariable(handler.CurrentSpace, stringTokens[1], stringTokens[2], stringTokens[3], val, altCameraInstance);
-                    NeosMod.Debug("Re:Fract : Tokens are " + stringTokens[1] + " " + stringTokens[2] + " " + stringTokens[3]);
+                    ResoniteMod.Debug("Re:Fract : Tokens are " + stringTokens[1] + " " + stringTokens[2] + " " + stringTokens[3]);
                 }
             }
         }
