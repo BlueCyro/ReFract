@@ -1,6 +1,6 @@
 # Re:Fract
 
-## Re:Fract is a [NeosModLoader](https://github.com/zkxs/NeosModLoader) mod that exposes many settings on the unity post processing stack for Neos cameras.
+## Re:Fract is a [ResoniteModLoader](https://github.com/resonite-modding-group/ResoniteModLoader) mod that exposes many settings on the unity post processing stack for Neos cameras.
 
 ## You can find usage instructions in: [Usage.md](Usage.md)
 ## Main Features:
