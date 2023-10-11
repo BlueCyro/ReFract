@@ -15,7 +15,7 @@ public class ReFract : ResoniteMod
 {
     public override string Author => "Cyro";
     public override string Name => "ReFract";
-    public override string Version => "1.1.1";
+    public override string Version => "1.1.2";
     public static string DynVarKeyString => "Re.Fract_";
     public static string DynVarCamKeyString => "Re.Fract_Camera_";
     public static string ReFractTag => "Re:FractCameraSpace";
@@ -399,47 +399,48 @@ public class ReFract : ResoniteMod
 
             int2 queriedRes = renderSettings.size;
 
-            if ((queriedRes > camRes).Any())
-            {
-                Msg("Re:Fract: RenderConnector_Patch: Queried resolution is bigger than camera resolution");
-                UnityEngine.Texture2D tex = new UnityEngine.Texture2D(queriedRes.x, queriedRes.y, renderSettings.textureFormat.ToUnity(true), false);
-                UnityEngine.RenderTexture temp = UnityEngine.RenderTexture.GetTemporary(queriedRes.x, queriedRes.y, 24, RenderTextureFormat.ARGB32);
-                UnityEngine.RenderTexture active = UnityEngine.RenderTexture.active;
+            //if ((queriedRes > camRes).Any())
+            //{
+            //    Msg("Re:Fract: RenderConnector_Patch: Queried resolution is bigger than camera resolution");
+            UnityEngine.Texture2D tex = new UnityEngine.Texture2D(queriedRes.x, queriedRes.y, renderSettings.textureFormat.ToUnity(true), false);
+            UnityEngine.RenderTexture temp = UnityEngine.RenderTexture.GetTemporary(queriedRes.x, queriedRes.y, 24, RenderTextureFormat.ARGB32);
+            UnityEngine.RenderTexture active = UnityEngine.RenderTexture.active;
                 
-                UnityEngine.RenderTexture old = unityCam.targetTexture;
-                unityCam.targetTexture = temp;
-                unityCam.Render();
-                unityCam.targetTexture = old;
+            UnityEngine.RenderTexture old = unityCam.targetTexture;
+            unityCam.targetTexture = temp;
+            unityCam.Render();
+            unityCam.targetTexture = old;
 
-                UnityEngine.RenderTexture.active = temp;
-                tex.ReadPixels(new UnityEngine.Rect(0, 0, queriedRes.x, queriedRes.y), 0, 0, false);
-                tex.Apply();
-                UnityEngine.RenderTexture.active = active;
+            UnityEngine.RenderTexture.active = temp;
+            tex.ReadPixels(new UnityEngine.Rect(0, 0, queriedRes.x, queriedRes.y), 0, 0, false);
+            tex.Apply();
+            UnityEngine.RenderTexture.active = active;
                 
-                UnityEngine.RenderTexture.ReleaseTemporary(temp);
-                byte[] bytes = tex.GetRawTextureData();
-                UnityEngine.Object.Destroy(tex);
-                __result = bytes;
-                return false;
-            }
-            else
-            {
-                UnityEngine.RenderTexture active = UnityEngine.RenderTexture.active;
-                UnityEngine.Texture2D tex = new UnityEngine.Texture2D(camRes.x, camRes.y, renderSettings.textureFormat.ToUnity(true), false);
+            UnityEngine.RenderTexture.ReleaseTemporary(temp);
+            byte[] bytes = tex.GetRawTextureData();
+            UnityEngine.Object.Destroy(tex);
+            __result = bytes;
+            return false;
+            //}
+            //else
+            //{
+            //TODO: This logic causes the screen to become darker. So I disable it. Need to debug that part
+            //    UnityEngine.RenderTexture active = UnityEngine.RenderTexture.active;
+            //    UnityEngine.Texture2D tex = new UnityEngine.Texture2D(camRes.x, camRes.y, renderSettings.textureFormat.ToUnity(true), false);
 
-                unityCam.Render();
-                UnityEngine.RenderTexture.active = renderTexture;
-                tex.ReadPixels(new UnityEngine.Rect(0, 0, camRes.x, camRes.y), 0, 0, false);
-                tex.Apply();
-                UnityEngine.RenderTexture.active = active;
+            //    unityCam.Render();
+            //    UnityEngine.RenderTexture.active = renderTexture;
+            //    tex.ReadPixels(new UnityEngine.Rect(0, 0, camRes.x, camRes.y), 0, 0, false);
+            //    tex.Apply();
+            //    UnityEngine.RenderTexture.active = active;
 
-                UnityEngine.Texture2D resized = tex.ResizeReal(queriedRes.x, queriedRes.y);
-                byte[] bytes = resized.GetRawTextureData();
-                UnityEngine.Object.Destroy(tex);
-                UnityEngine.Object.Destroy(resized);
-                __result = bytes;
-                return false;
-            }
+            //    UnityEngine.Texture2D resized = tex.ResizeReal(queriedRes.x, queriedRes.y);
+            //    byte[] bytes = resized.GetRawTextureData();
+            //    UnityEngine.Object.Destroy(tex);
+            //    UnityEngine.Object.Destroy(resized);
+            //    __result = bytes;
+            //    return false;
+            //}
         }
     }
 }
